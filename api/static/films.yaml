@@ -1,0 +1,273 @@
+openapi: 3.0.0
+info:
+  title: Каталог автомобилей
+  version: 1.0.0
+paths:
+  /cars:
+    get:
+      summary: Получение списка автомобилей
+      parameters:
+        - in: query
+          name: regNum
+          required: false
+          description: Номер авто
+          schema:
+            type: string
+        - in: query
+          name: mark
+          required: false
+          description: Марка авто
+          schema:
+            type: string
+        - in: query
+          name: model
+          required: false
+          description: Модель авто
+          schema:
+            type: string
+        - in: query
+          name: owner_name
+          description: Имя владельца
+          schema:
+            type: string
+        - in: query
+          name: owner_surname
+          description: Фамилия владельца
+          schema:
+            type: string
+        - in: query
+          name: page
+          description: Номер страницы результатов
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - in: query
+          name: resperpage
+          description: Кол-во результатов на странцие
+          schema:
+            type: integer
+            default: 5
+            example: 5    
+      responses:
+        '200':
+          description: Список автомобилей
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Cars'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      summary: Внесение нового автомобиля
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                regNums:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Успешное внесение данных
+        '400':
+          description: Некорректные данные
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /cars/{id}:
+    patch:
+      summary: Обновление данных автомобиля
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: Идентификатор автомобиля
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                regNum:
+                  nullable: true
+                  type: string
+                  example: 'M123OP177'
+                mark:
+                  nullable: true
+                  type: string
+                  example: 'Opel'
+                model:
+                  nullable: true
+                  type: string
+                  example: 'Astra'
+                year:
+                  nullable: true
+                  type: integer
+                  example: 2010
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Car'
+        '400':
+          description: Некорректные данные
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Автомобиль не найден
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      summary: Удаление автомобиля по идентификатору
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: Идентификатор автомобиля
+      responses:
+        '204':
+          description: Автомобиль успешно удален
+        '400':
+          description: Некорректные данные
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Автомобиль не найден
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /info/{regNum}:
+    get:
+      summary: Имитация внешнего api
+      parameters:
+        - in: path
+          name: regNum
+          required: true
+          schema:
+            type: string
+            description: Идентификатор автомобиля
+      responses:
+        '200':
+          description: Список автомобилей
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Car'
+
+components:
+  schemas:
+    Car:
+      type: object
+      required:
+        - regNum
+        - mark
+        - model
+        - owner
+      properties:
+        regNum:
+          type: string
+          example: 'X123XX150'
+        mark:
+          type: string
+          example: Lada
+        model:
+          type: string
+          example: Vesta
+        year:
+          type: integer
+          example: 2002
+        owner:
+          $ref: '#/components/schemas/People'
+    People:
+      required:
+        - name
+        - surname
+      type: object
+      properties:
+        name:
+          type: string
+          example: Vasiliy
+        surname:
+          type: string
+          example: Kulyashov
+        patronymic:
+          type: string
+          example: Romanovich
+    Cars:
+      type: object
+      required:
+      - cars
+      properties:
+        page:
+          type: integer
+        next_page:
+          type: integer
+        prev_page:
+          type: integer  
+        cars:
+          type: array
+          items:
+            $ref: '#/components/schemas/Car'
