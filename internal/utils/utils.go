@@ -1,58 +1,62 @@
 package utils
 
 import (
+	"flag"
+	"log/slog"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
-var dev = false
+var Local_dev *bool // false for docker and true for local stage
+var Logger = GetLogger()
 
-func GetTestMigrPathDown() string {
-	if dev {
-		return "./internal/migrations/test_migration_down.sql"
-	} else {
-		return "../internal/migrations/test_migration_down.sql"
-	}
+func DevMode() *bool {
+	local_dev := flag.Bool("devmode", false, "true triggers for local and false for docker env")
+	flag.Parse()
+	return local_dev
 }
+func GetLogger() *slog.Logger {
 
-func GetTestMigrPathUp() string {
-	if dev {
-		return "./internal/migrations/test_migration.sql"
-	} else {
-		return "../internal/migrations/test_migration.sql"
-	}
+	var lvl = new(slog.LevelVar)
+	lvl.Set(slog.LevelDebug)
+
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: lvl,
+	}))
+	return logger
 }
-
 func GetMigrPath() string {
-	if dev {
-		return "./internal/migrations/migrations.sql"
-	} else {
+	if *Local_dev {
 		return "../internal/migrations/migrations.sql"
+	} else {
+		return "./internal/migrations/migrations.sql"
 	}
 }
 
 func GetStaticPath() string {
-	if dev {
-		return "./api/static/redoc.html"
-	} else {
+	if *Local_dev {
 		return "../api/static/redoc.html"
+	} else {
+		return "./api/static/redoc.html"
 	}
 }
 
 func GetStaticRoot() string {
 
-	if dev {
-		return "./api/static"
-	} else {
+	if *Local_dev {
 		return "../api/static"
+	} else {
+		return "./api/static"
 	}
 }
 
 func GetEnv() (hostDB, portDB, userDB, passwordDB, dbnameDB, driverDB string) {
 
 	var host, port, user, password, dbname, driver string
-	err := godotenv.Load(".env")
+	//docker mode
+	err := godotenv.Load("example.env")
+	// local mode
 	if err != nil {
 		err = godotenv.Load("../example.env")
 		if err != nil {

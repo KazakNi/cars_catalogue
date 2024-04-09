@@ -2,8 +2,8 @@ package api
 
 import (
 	"bytes"
+	"cars/internal/utils"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -55,10 +55,10 @@ func NewResponseWriterWrapper(w http.ResponseWriter) ResponseWriterWrapper {
 
 func LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("income request: endpoint %s, method %s", r.URL, r.Method)
+		utils.Logger.Info("income request:", "endpoint", r.URL, "method", r.Method)
 		defer func() {
 			rww := NewResponseWriterWrapper(w)
-			log.Println(
+			utils.Logger.Info(
 				fmt.Sprintf(
 					"[Request: %v] [Response: %s]",
 					r, rww.String(),

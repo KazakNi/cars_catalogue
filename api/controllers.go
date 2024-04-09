@@ -9,24 +9,9 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
-
-func load_secret() string {
-
-	err := godotenv.Load(".env")
-	if err != nil {
-		err = godotenv.Load("../example.env")
-		if err != nil {
-			panic("error while loading .env file")
-		}
-	}
-	return os.Getenv("TOKEN_SECRET")
-}
 
 func ReDoc(w http.ResponseWriter, r *http.Request) {
 	static_path := utils.GetStaticPath()
@@ -37,184 +22,17 @@ func ReDoc(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-/*
-	func DeleteCar(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/actors/"))
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Undefined id request Err: %s", err)
-			return
-		}
-		var actor Actor
-		actor, err = actor.GetActorById(id, db.DBConnection)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Print(err)
-			return
-		}
-		err = actor.Delete(id, db.DBConnection)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Error while delete actor operation: %s", err)
-			return
-		}
-		w.WriteHeader(http.StatusNoContent)
-	}
-
-	func UpdateActor(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/actors/"))
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Undefined id request Err: %s", err)
-			return
-		}
-
-		actor := &Actor{}
-		d := json.NewDecoder(r.Body)
-		d.DisallowUnknownFields()
-		err = d.Decode(actor)
-
-		if err != nil {
-			log.Printf("Error while %s endpoint response body parsing: %s", r.URL, err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		_, err = actor.GetActorById(id, db.DBConnection)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Print(err)
-			return
-		}
-
-		err = actor.Update(id, db.DBConnection)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Error while update actor operation: %s", err)
-			return
-		}
-		w.WriteHeader(http.StatusNoContent)
-	}
-
-	func CreateFilm(w http.ResponseWriter, r *http.Request) {
-		film := &PostFilm{}
-		d := json.NewDecoder(r.Body)
-		d.DisallowUnknownFields()
-		err := d.Decode(film)
-
-		if err != nil {
-			log.Printf("Error while %s endpoint response body parsing: %s", r.URL, err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		var f = Film{Name: film.Name,
-			Description:  film.Description,
-			Release_date: film.Release_date,
-			Rating:       film.Rating}
-
-		film_id, err := f.Create(db.DBConnection)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Error while creating an film: %s", err)
-			return
-		}
-
-		err = f.InsertCast(film_id, film.Actors_list, db.DBConnection)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Error while inserting actors: %s", err)
-			return
-		}
-
-		w.WriteHeader(http.StatusCreated)
-		resp, err := json.Marshal(CreatedId{Id: film_id})
-
-		if err != nil {
-			log.Printf("Error happened in JSON marshal. Err: %s", err)
-			return
-		}
-		w.Write(resp)
-
-}
-
-	func DeleteFilm(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/films/"))
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Undefined id request Err: %s", err)
-			return
-		}
-		var film Film
-		film, err = film.GetFilmById(id, db.DBConnection)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Print(err)
-			return
-		}
-		err = film.Delete(id, db.DBConnection)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Error while delete actor operation: %s", err)
-			return
-		}
-		w.WriteHeader(http.StatusNoContent)
-	}
-
-	func UpdateFilm(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/films/"))
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Undefined id request Err: %s", err)
-			return
-		}
-
-		film := &PostFilm{}
-		d := json.NewDecoder(r.Body)
-		d.DisallowUnknownFields()
-		err = d.Decode(film)
-
-		if err != nil {
-			log.Printf("Error while %s endpoint response body parsing: %s", r.URL, err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		var f = Film{Name: film.Name,
-			Description:  film.Description,
-			Release_date: film.Release_date,
-			Rating:       film.Rating}
-
-		_, err = f.GetFilmById(id, db.DBConnection)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Print(err)
-			return
-		}
-
-		err = f.Update(id, film.Actors_list, db.DBConnection)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Error while update actor operation: %s", err)
-			return
-		}
-		w.WriteHeader(http.StatusNoContent)
-	}
-*/
 func GetListCars(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 	var cars Cars
 	cars, err := cars.GetAllCars(db.DBConnection, params)
+
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Error while extracting cars: %s", err)
+		utils.Logger.Debug("Error while extracting cars: ", "error", err)
 		return
 	}
+
 	b, _ := json.Marshal(cars)
 	w.WriteHeader(http.StatusOK)
 	w.Write(b)
@@ -227,13 +45,13 @@ func CreateCar(w http.ResponseWriter, r *http.Request) {
 	err := d.Decode(&regnums)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Print(err)
+		utils.Logger.Debug("Error while decoding regnums", "error", err)
 		return
 	}
 	if err = regnums.Validate(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Неверный формат данных!"))
-		log.Print(err)
+		utils.Logger.Info("Error while validating regnums", "error", err, "regnums invalid:", regnums)
 		return
 	}
 
@@ -242,7 +60,7 @@ func CreateCar(w http.ResponseWriter, r *http.Request) {
 		resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:8080/info/%s", number))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Println(err)
+			utils.Logger.Debug("Error while ping info endpoint", "error", err)
 			return
 		}
 
@@ -253,14 +71,14 @@ func CreateCar(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("Неверный формат данных")
+			utils.Logger.Info("Error while validating car", "error", err, "car:", car)
 			return
 		}
 
 		err = car.Create(db.DBConnection)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Println(err)
+			utils.Logger.Debug("Error while creating car", "error", err)
 			return
 		}
 
@@ -278,14 +96,14 @@ func GetCarInfo(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Println("DB Query error: ", err)
+		utils.Logger.Debug("DB Query error", "error", err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		if err := rows.Scan(&car.RegNum, &car.Mark, &car.Model, &car.Year, &car.Owner.Name, &car.Owner.Surname, &car.Owner.Patronymic); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			log.Println(err)
+			utils.Logger.Debug("DB Scan error", "error", err)
 			return
 		}
 
@@ -300,28 +118,29 @@ func DeleteCar(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/cars/"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Undefined id request Err: %s", err)
+		utils.Logger.Debug("Undefined id request", "error", err)
 		return
 	}
 
 	var car Car
 	car, err = car.GetCarById(id, db.DBConnection)
+
 	if err == sql.ErrNoRows {
 		w.WriteHeader(http.StatusNotFound)
-		log.Print("car's id is not found: ", id)
+		utils.Logger.Info("The car's id is not found", "error", err)
 		return
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Print(err)
+		utils.Logger.Debug("CarById error while querying", "error", err)
 		return
 	}
 
 	err = car.Delete(id, db.DBConnection)
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Error while delete car operation: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		utils.Logger.Debug("Error while delete car operation", "error", err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -331,7 +150,7 @@ func UpdateCar(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/cars/"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Undefined id request Err: %s", err)
+		utils.Logger.Debug("Undefined id request", "error", err)
 		return
 	}
 
@@ -341,13 +160,13 @@ func UpdateCar(w http.ResponseWriter, r *http.Request) {
 	err = d.Decode(&car)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Print(err)
+		utils.Logger.Debug("Error while decoding car binary", "error", err)
 		return
 	}
 	if err = car.Validate(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Неверный формат данных!"))
-		log.Print(err)
+		utils.Logger.Debug("Error while validating car", "error", err)
 		return
 	}
 
@@ -355,13 +174,15 @@ func UpdateCar(w http.ResponseWriter, r *http.Request) {
 
 	if err == sql.ErrNoRows {
 		w.WriteHeader(http.StatusNotFound)
-		log.Print("car's id is not found: ", id)
+		utils.Logger.Info("The car's id is not found", "error", err)
 		return
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Error while update car operation: %s", err)
+		utils.Logger.Debug("Error while update car operation", "error", err)
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+	b, _ := json.Marshal(car)
+	w.WriteHeader(http.StatusOK)
+	w.Write(b)
 }

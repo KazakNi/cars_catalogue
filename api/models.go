@@ -39,6 +39,14 @@ type Car struct {
 	Owner  Owner  `json:"owner"`
 }
 
+type CarDB struct {
+	RegNum string `json:"regnum" db:"regnum" validate:"required"`
+	Mark   string `json:"mark" db:"mark" validate:"required"`
+	Model  string `json:"model" db:"model" validate:"required"`
+	Year   int    `json:"year,omitempty" db:"year"`
+	Owner
+}
+
 func (c *Car) Validate() error {
 	validate := validator.New()
 	err := validate.Struct(c)
@@ -103,25 +111,44 @@ func (c *Cars) GetPaginationParams(params url.Values) (p, rp int) {
 	if len(pageparam) > 0 && len(resppageparam) > 0 {
 		page, err := strconv.Atoi(pageparam)
 		if err != nil {
-			return 0, 0
+			return 0, 5
 		}
 		resppage, err := strconv.Atoi(resppageparam)
 		if err != nil {
-			return 0, 0
+			return page, 5
 		}
 		return page, resppage
 	}
 
-	return 0, 0
+	return 0, 5 // 5 результатов на странце по умолчанию
 }
+
+func (c *Cars) GetValuesFromDB(carsDB []CarDB) {
+	for _, car := range carsDB {
+		var normalCar Car
+		normalCar.RegNum = car.RegNum
+		normalCar.Mark = car.Mark
+		normalCar.Model = car.Model
+		normalCar.Year = car.Year
+		normalCar.Owner.Name = car.Owner.Name
+		normalCar.Owner.Surname = car.Owner.Surname
+		normalCar.Owner.Patronymic = car.Owner.Patronymic
+
+		c.Cars = append(c.Cars, normalCar)
+	}
+}
+
 func (c *Cars) GetAllCars(db *sqlx.DB, params url.Values) (Cars, error) {
-	cars := []Car{}
+	carsDB := []CarDB{}
 	res := Cars{}
 
 	var rowsNum int
 
 	page, resppage := c.GetPaginationParams(params)
 	offset := page*resppage - resppage
+	if offset < 0 {
+		offset = 0
+	}
 
 	regNum := params.Get("regNum")
 	mark := params.Get("mark")
@@ -131,17 +158,17 @@ func (c *Cars) GetAllCars(db *sqlx.DB, params url.Values) (Cars, error) {
 
 	if len(params.Get("regNum")) > 0 {
 
-		err := db.Select(&cars, DB.GetListCarsRegNumStmt, regNum)
+		err := db.Select(&carsDB, DB.GetListCarsRegNumStmt, regNum)
 		if err != nil {
 			return res, err
 		}
 		rowsNum = 1
-		res.Cars = cars
+		res.GetValuesFromDB(carsDB)
 	}
 
 	if len(params.Get("mark")) > 0 {
 
-		err := db.Select(&cars, DB.GetListCarsMarkStmt, mark)
+		err := db.Select(&carsDB, DB.GetListCarsMarkStmt, mark)
 		if err != nil {
 			return res, err
 		}
@@ -149,12 +176,12 @@ func (c *Cars) GetAllCars(db *sqlx.DB, params url.Values) (Cars, error) {
 		if err != nil {
 			return res, err
 		}
-		res.Cars = cars
+		res.GetValuesFromDB(carsDB)
 	}
 
 	if len(params.Get("model")) > 0 {
 
-		err := db.Select(&cars, DB.GetListCarsModelStmt, model)
+		err := db.Select(&carsDB, DB.GetListCarsModelStmt, model)
 		if err != nil {
 			return res, err
 		}
@@ -162,12 +189,12 @@ func (c *Cars) GetAllCars(db *sqlx.DB, params url.Values) (Cars, error) {
 		if err != nil {
 			return res, err
 		}
-		res.Cars = cars
+		res.GetValuesFromDB(carsDB)
 	}
 
 	if len(params.Get("owner_name")) > 0 {
 
-		err := db.Select(&cars, DB.GetListCarsOwnerNameStmt, owner_name)
+		err := db.Select(&carsDB, DB.GetListCarsOwnerNameStmt, owner_name)
 		if err != nil {
 			return res, err
 		}
@@ -175,12 +202,12 @@ func (c *Cars) GetAllCars(db *sqlx.DB, params url.Values) (Cars, error) {
 		if err != nil {
 			return res, err
 		}
-		res.Cars = cars
+		res.GetValuesFromDB(carsDB)
 	}
 
 	if len(params.Get("owner_surname")) > 0 {
 
-		err := db.Select(&cars, DB.GetListCarsOwnerSurNameStmt, owner_surname)
+		err := db.Select(&carsDB, DB.GetListCarsOwnerSurNameStmt, owner_surname)
 		if err != nil {
 			return res, err
 		}
@@ -188,13 +215,13 @@ func (c *Cars) GetAllCars(db *sqlx.DB, params url.Values) (Cars, error) {
 		if err != nil {
 			return res, err
 		}
-		res.Cars = cars
+		res.GetValuesFromDB(carsDB)
 	}
 
 	// if no params
 
 	if regNum == "" && mark == "" && model == "" && owner_name == "" && owner_surname == "" {
-		err := db.Select(&cars, DB.GetListCarsStmt, offset, resppage)
+		err := db.Select(&carsDB, DB.GetListCarsStmt, offset, resppage)
 		if err != nil {
 			return res, err
 		}
@@ -203,7 +230,7 @@ func (c *Cars) GetAllCars(db *sqlx.DB, params url.Values) (Cars, error) {
 		if err != nil {
 			return res, err
 		}
-		res.Cars = cars
+		res.GetValuesFromDB(carsDB)
 	}
 
 	if page != 0 && resppage != 0 {

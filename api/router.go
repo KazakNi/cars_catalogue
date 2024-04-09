@@ -2,7 +2,6 @@ package api
 
 import (
 	"cars/internal/utils"
-	"log"
 	"net/http"
 )
 
@@ -28,11 +27,11 @@ func SetRoutes() {
 	// test api
 	mux.HandleFunc("GET /info/{regNum}", GetCarInfo)
 
-	log.Println("Starting server")
+	utils.Logger.Info("Starting server")
 
 	err := http.ListenAndServe(":8080", mux)
 
 	if err != nil {
-		log.Fatal(err)
+		utils.Logger.Error("Error while listening", "error:", err)
 	}
 }
